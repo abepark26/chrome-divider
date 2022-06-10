@@ -5,6 +5,35 @@
   "manifest_version": 3,
 
   "background": {
-    "page": "background.html"
+    "service_worker": "background.js"
+  },
+
+  "permissions": ["tabs", "windows", "system.display"],
+
+  "commands": {
+    "increase-window": {
+      "suggested_key": {
+        "default": "Alt+Shift+Up"
+      },
+      "description": "__MSG_rotateWindowRight__"
+    },
+    "decrease-window": {
+      "suggested_key": {
+        "default": "Alt+Shift+Down"
+      },
+      "description": "__MSG_rotateWindowLeft__"
+    },
+    "rotate-window-right": {
+      "suggested_key": {
+        "default": "Alt+Shift+Right"
+      },
+      "description": "__MSG_rotateWindowRight__"
+    },
+    "rotate-window-left": {
+      "suggested_key": {
+        "default": "Alt+Shift+Left"
+      },
+      "description": "__MSG_rotateWindowLeft__"
+    }
   }
 }
