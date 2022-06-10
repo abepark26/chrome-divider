@@ -4,8 +4,8 @@ let WINDOW_SIZE = {
   height: 0,
 };
 
-let STACK = [];
-let STACK_LEN = 0;
+let mapped = new Map();
+let num_mapped = 0;
 let curr_id = 0;
 
 async function initializeExtension() {
@@ -14,9 +14,43 @@ async function initializeExtension() {
   WINDOW_SIZE.width = DISPLAY_BOUNDS["width"];
   WINDOW_SIZE.height = DISPLAY_BOUNDS["height"];
 
-  let ALPHA = await chrome.windows.getCurrent();
+  addToMap();
+}
+
+async function addToMap() {
+  let ALPHA = await chrome.windows.getLastFocused();
   curr_id = ALPHA["id"];
-  STACK.push(curr_id);
+  num_mapped += 1;
+  mapped.set(curr_id, null);
+}
+
+async function createWindow() {
+  switch (num_mapped) {
+    case 1:
+      await chrome.windows.create({
+        width: WINDOW_SIZE.width / 2,
+        height: WINDOW_SIZE.height,
+      });
+      break;
+    case 2:
+      await chrome.windows.create({
+        width: WINDOW_SIZE.width / 3,
+        height: WINDOW_SIZE.height,
+      });
+      break;
+    case 3:
+      await chrome.windows.create({
+        width: WINDOW_SIZE.width / 2,
+        height: WINDOW_SIZE.height / 2,
+      });
+      break;
+    default:
+      await chrome.windows.create({
+        width: WINDOW_SIZE.width,
+        height: WINDOW_SIZE.height,
+      });
+      break;
+  }
 }
 
 /* EXECUTION */
@@ -25,10 +59,10 @@ chrome.commands.onCommand.addListener((command) => {
   switch (command) {
     case "increase-window":
       console.log("increase-window");
-      chrome.windows.create({
-        width: WINDOW_SIZE.width / 2,
-        height: WINDOW_SIZE.height / 2,
-      });
+      if (num_mapped < 4) {
+        createWindow();
+        addToMap();
+      }
       break;
     case "decrease-window":
       console.log("decrease-window");
@@ -40,6 +74,6 @@ chrome.commands.onCommand.addListener((command) => {
       console.log("rotate-window-left");
       break;
     default:
-      console.warn("Unrecognized command: ");
+      console.warn("Unrecognized command");
   }
 });
