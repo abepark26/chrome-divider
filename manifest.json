@@ -1,0 +1,10 @@
+{
+  "name": "Chrome Divider",
+  "description": "Divide your Chrome page!",
+  "version": "1.0",
+  "manifest_version": 3,
+
+  "background": {
+    "page": "background.html"
+  }
+}
