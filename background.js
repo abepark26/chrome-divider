@@ -1,31 +1,33 @@
-/*  */
+/* INITIALIZATION */
 let WINDOW_SIZE = {
   width: 0,
   height: 0,
 };
 
-async function getDisplayInfo() {
-  let info = await chrome.system.display.getInfo();
-  return info;
+let STACK = [];
+let STACK_LEN = 0;
+let curr_id = 0;
+
+async function initializeExtension() {
+  const DISPLAY_PROMISE = await chrome.system.display.getInfo();
+  const DISPLAY_BOUNDS = DISPLAY_PROMISE[0]["bounds"];
+  WINDOW_SIZE.width = DISPLAY_BOUNDS["width"];
+  WINDOW_SIZE.height = DISPLAY_BOUNDS["height"];
+
+  let ALPHA = await chrome.windows.getCurrent();
+  curr_id = ALPHA["id"];
+  STACK.push(curr_id);
 }
 
-getDisplayInfo().then((response) => {
-  let bounds = response[0]["bounds"];
-  WINDOW_SIZE.width = bounds["width"];
-  WINDOW_SIZE.height = bounds["height"];
-});
-
-/* STACK */
-let stack = [];
-
-/* COMMANDS */
+/* EXECUTION */
+initializeExtension();
 chrome.commands.onCommand.addListener((command) => {
   switch (command) {
     case "increase-window":
       console.log("increase-window");
       chrome.windows.create({
-        width: WINDOW_SIZE.width,
-        height: WINDOW_SIZE.height,
+        width: WINDOW_SIZE.width / 2,
+        height: WINDOW_SIZE.height / 2,
       });
       break;
     case "decrease-window":
