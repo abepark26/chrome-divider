@@ -5,8 +5,6 @@ let WINDOW_SIZE = {
 };
 
 let mapped = new Map();
-let num_mapped = 0;
-let curr_id = 0;
 
 async function initializeExtension() {
   const DISPLAY_PROMISE = await chrome.system.display.getInfo();
@@ -14,17 +12,18 @@ async function initializeExtension() {
   WINDOW_SIZE.width = DISPLAY_BOUNDS["width"];
   WINDOW_SIZE.height = DISPLAY_BOUNDS["height"];
 
-  addToMap();
+  let window_id = await getLastWindowId();
+  mapped.set(window_id, null);
 }
 
-async function addToMap() {
-  let ALPHA = await chrome.windows.getLastFocused();
-  curr_id = ALPHA["id"];
-  num_mapped += 1;
-  mapped.set(curr_id, null);
+async function getLastWindowId() {
+  let OMEGA = await chrome.windows.getLastFocused();
+  return OMEGA["id"];
 }
 
-async function createWindow() {
+initializeExtension();
+
+async function createWindow(num_mapped) {
   switch (num_mapped) {
     case 1:
       await chrome.windows.create({
@@ -53,16 +52,16 @@ async function createWindow() {
   }
 }
 
-/* EXECUTION */
-initializeExtension();
+/* USER COMMAND LISTENER */
 chrome.commands.onCommand.addListener((command) => {
+  console.log(mapped);
+  console.log(mapped.size);
+  num_mapped = mapped.size;
+
   switch (command) {
     case "increase-window":
       console.log("increase-window");
-      if (num_mapped < 4) {
-        createWindow();
-        addToMap();
-      }
+      if (num_mapped < 4) createWindow(num_mapped);
       break;
     case "decrease-window":
       console.log("decrease-window");
@@ -77,3 +76,17 @@ chrome.commands.onCommand.addListener((command) => {
       console.warn("Unrecognized command");
   }
 });
+
+/* WINDOW ON/OFF LISTERNER */
+async function removeFromMap(windowId) {
+  console.log(windowId);
+  mapped.delete(windowId);
+  console.log(mapped.size);
+}
+
+async function addMap(window) {
+  mapped.set(window.id, null);
+}
+
+chrome.windows.onRemoved.addListener(removeFromMap);
+chrome.windows.onCreated.addListener(addMap);
